@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">iCabbyClient</string>
+    <string name="title_home">ConnectPIM</string>
+    <string name="title_connect_meter_tunnel">ConnectTunnel</string>
+    <string name="title_icabby_fake_meter">iCabby Meter</string>
+    <string name="title_pim">Message PIM</string>
+    <string name="title_message_meter">Message Meter</string>
+
+</resources>

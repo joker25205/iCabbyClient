@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              tools:context=".fragments.BluetoothClientFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/miter_on"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Miter ON"/>
+
+        <Button
+            android:id="@+id/miter_time_off"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Time Off"/>
+
+        <Button
+            android:id="@+id/miter_add_extras"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Extras"/>
+
+        <Button
+            android:id="@+id/miter_off"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Miter Off"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/show_sent_information"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="ICabby Client\n Show sent information"/>
+
+    <Button
+        android:id="@+id/update_trip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update trip"/>
+
+</LinearLayout>

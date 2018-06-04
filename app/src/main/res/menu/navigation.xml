@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_pim_client_connect"
+        android:icon="@drawable/ic_pim_connect"
+        android:title="@string/title_home"/>
+    <item
+        android:id="@+id/navigation_tunnel_client_connect"
+        android:icon="@drawable/ic_tunnel_connect"
+        android:title="@string/title_connect_meter_tunnel"/>
+
+    <item
+        android:id="@+id/navigation_send_data_to_pim"
+        android:icon="@drawable/ic_phone"
+        android:title="@string/title_icabby_fake_meter"/>
+
+    <item
+        android:id="@+id/navigation_pim_communicate"
+        android:icon="@drawable/ic_forum"
+        android:title="@string/title_pim"/>
+    <item
+        android:id="@+id/navigation_tunnel_communicate"
+        android:icon="@drawable/ic_tunnel"
+        android:title="@string/title_message_meter"/>
+
+</menu>
