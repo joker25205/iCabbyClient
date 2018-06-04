@@ -74,34 +74,34 @@ public class ICabbyClientFragment extends Fragment implements BluetoothMessageSe
         switch (v.getId()) {
             case R.id.miter_on:
                 Toast.makeText(getContext(), "Click Miter On", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterOn = getICabbyData("TRIP_STATUS", 320, 0, false, 320, TRIP_ID, "MeterOn");
+                String sendMessageMeterOn = getICabbyData("TRIP_STATUS", 320, 0, false, 320, TRIP_ID, "MeterOn", false);
                 mBluetoothServer.send(sendMessageMeterOn.getBytes());
                 break;
             case R.id.miter_time_off:
                 Toast.makeText(getContext(), "Click Miter Time Off", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterOff = getICabbyData("TRIP_STATUS", 600, 400, false, 1000, TRIP_ID, "MeterTimeOff");
+                String sendMessageMeterOff = getICabbyData("TRIP_STATUS", 600, 400, false, 1000, TRIP_ID, "MeterTimeOff", false);
                 mBluetoothServer.send(sendMessageMeterOff.getBytes());
                 break;
             case R.id.miter_add_extras:
                 Toast.makeText(getContext(), "Click Miter Add Extras", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterAddExtras = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "MeterExtras");
+                String sendMessageMeterAddExtras = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "MeterExtras", false);
                 mBluetoothServer.send(sendMessageMeterAddExtras.getBytes());
                 break;
             case R.id.miter_off:
                 Toast.makeText(getContext(), "Click Miter Off", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterMeterOff = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "MeterOff");
+                String sendMessageMeterMeterOff = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "MeterOff", false);
                 mBluetoothServer.send(sendMessageMeterMeterOff.getBytes());
                 break;
             case R.id.update_trip:
                 Toast.makeText(getContext(), "Click Update Trip information", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterMeterUpdateTrip = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "UpdateTrip");
+                String sendMessageMeterMeterUpdateTrip = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "UpdateTrip", false);
                 mBluetoothServer.send(sendMessageMeterMeterUpdateTrip.getBytes());
                 break;
         }
     }
 
     @NonNull
-    private String getICabbyData(final String cmd, final int fare, final int extras, final boolean flatRate, final int totalAmount, final String tripID, final String status) {
+    private String getICabbyData(final String cmd, final int fare, final int extras, final boolean flatRate, final int totalAmount, final String tripID, final String status, final boolean account) {
         ICabbyData iCabbyData = new ICabbyData();
         iCabbyData.setCmd(cmd);
         Args args = new Args();
@@ -111,6 +111,7 @@ public class ICabbyClientFragment extends Fragment implements BluetoothMessageSe
         args.setStatus(status);
         args.setTotalAmount(totalAmount);
         args.setTripId(tripID);
+        args.setAccount(account);
         iCabbyData.setArgs(args);
         return new Gson().toJson(iCabbyData);
     }
