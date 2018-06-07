@@ -12,37 +12,44 @@ import java.util.UUID;
 import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer;
 import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServerMeterTunnel;
 import ua.com.icabbyclient.icabbyclient.fragments.ApiCommunicationClientFragment;
-import ua.com.icabbyclient.icabbyclient.fragments.BluetoothClientFragment;
-import ua.com.icabbyclient.icabbyclient.fragments.ICabbyConnectionFragment;
+import ua.com.icabbyclient.icabbyclient.fragments.DeviceConnectionFragment;
 import ua.com.icabbyclient.icabbyclient.fragments.TunnelCommunicationFragment;
 
-public class MainActivity extends AppCompatActivity implements ApiCommunicationClientFragment.MeterFunctions {
+public class MainActivity extends AppCompatActivity {
 
     public static final String DEVICE_NAME = "PimServer";
     private static final String TUNNEL_SEVER_NAME = "TunnelServer";
     public static UUID sUUID_PIM = UUID.fromString("895a86e2-6a31-11e8-adc0-fa7ae01bbebc");
     public static UUID sUUID_Tunnel = UUID.fromString("c90c5b86-536f-11e8-9c2d-fa7ae01bbebc");
 
-    private BluetoothServer mBluetoothServer;
-    private BluetoothServerMeterTunnel mBluetoothServerMeter;
-
     private TunnelCommunicationFragment mTunnelCommunicationFragment;
     private ApiCommunicationClientFragment mApiCommunicationClientFragment;
+    private DeviceConnectionFragment mDeviceConnectionFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mTunnelCommunicationFragment = new TunnelCommunicationFragment();
-        mApiCommunicationClientFragment = new ApiCommunicationClientFragment();
-        mApiCommunicationClientFragment.setClickComand(this);
+        mDeviceConnectionFragment = new DeviceConnectionFragment();
 
-        mBluetoothServer = new BluetoothServer(DEVICE_NAME, sUUID_PIM, mApiCommunicationClientFragment);
-        mBluetoothServerMeter = new BluetoothServerMeterTunnel(TUNNEL_SEVER_NAME, sUUID_Tunnel, mTunnelCommunicationFragment);
+        mApiCommunicationClientFragment = new ApiCommunicationClientFragment();
+
+        mTunnelCommunicationFragment = new TunnelCommunicationFragment();
+
+
+        final BluetoothServer mBluetoothServer = new BluetoothServer(DEVICE_NAME, sUUID_PIM, mApiCommunicationClientFragment);
+        final BluetoothServerMeterTunnel mBluetoothServerMeter = new BluetoothServerMeterTunnel(TUNNEL_SEVER_NAME, sUUID_Tunnel, mTunnelCommunicationFragment);
+
+        mDeviceConnectionFragment.setBluetoothServerAPI(mBluetoothServer);
+        mDeviceConnectionFragment.setBluetoothServerTunnel(mBluetoothServerMeter);
+
+        mApiCommunicationClientFragment.setBluetoothConnection(mBluetoothServer);
+
+        mTunnelCommunicationFragment.setBluetoothServerSendData(mBluetoothServerMeter);
 
         if (savedInstanceState == null) {
-            addFragment(new BluetoothClientFragment(mBluetoothServer));
+            addFragment(mDeviceConnectionFragment);
         }
 
         BottomNavigationView navigation = findViewById(R.id.navigation);
@@ -55,11 +62,8 @@ public class MainActivity extends AppCompatActivity implements ApiCommunicationC
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.navigation_pim_client_connect:
-                    replaceFragment(new BluetoothClientFragment(mBluetoothServer));
-                    return true;
-                case R.id.navigation_tunnel_client_connect:
-                    replaceFragment(new ICabbyConnectionFragment(mBluetoothServerMeter));
+                case R.id.navigation_bluetooth_deviceconnection:
+                    replaceFragment(mDeviceConnectionFragment);
                     return true;
                 case R.id.navigation_send_data_to_pim:
                     replaceFragment(mApiCommunicationClientFragment);
@@ -86,11 +90,5 @@ public class MainActivity extends AppCompatActivity implements ApiCommunicationC
                 .beginTransaction()
                 .replace(R.id.main_frame, fragment)
                 .commit();
-    }
-
-    @Override
-    public void setMeterCommand(final String message) {
-        if (mBluetoothServer != null)
-            mBluetoothServer.send(message.getBytes());
     }
 }

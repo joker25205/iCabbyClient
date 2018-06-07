@@ -1,7 +1,6 @@
 package ua.com.icabbyclient.icabbyclient.fragments;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -11,7 +10,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -30,37 +28,40 @@ import java.util.List;
 import ua.com.icabbyclient.icabbyclient.MainActivity;
 import ua.com.icabbyclient.icabbyclient.R;
 import ua.com.icabbyclient.icabbyclient.adapters.DeviceListAdapter;
-import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer;
+import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServerConnecting;
 import ua.com.icabbyclient.icabbyclient.utils.SeparatorDecoration;
 
-
-@SuppressLint("ValidFragment")
-public class BluetoothClientFragment extends Fragment implements DeviceListAdapter.OnPairButtonClickListener{
-
+public class DeviceConnectionFragment extends Fragment implements DeviceListAdapter.OnPairButtonClickListener {
     private static final int REQUEST_ENABLE_BT = 1;
+
+    public static final int PIM_APP = 1;
+    public static final int TUNNEL_APP = 2;
 
     private BluetoothAdapter mBluetoothAdapter;
     private List<BluetoothDevice> mListDevice = new ArrayList<>();
     private DeviceListAdapter mDeviceListAdapter;
+    private RecyclerView mRecyclerView;
 
-    RecyclerView mRecyclerView;
+    private BluetoothServerConnecting mBluetoothServer;
+    private BluetoothServerConnecting mBluetoothServerMeterTunnel;
 
-    private BluetoothServer mBluetoothServer;
-
-    public BluetoothClientFragment(BluetoothServer bluetoothServer) {
+    public void setBluetoothServerAPI(BluetoothServerConnecting bluetoothServer) {
         mBluetoothServer = bluetoothServer;
     }
+
+    public void setBluetoothServerTunnel(BluetoothServerConnecting bluetoothServerMeterTunnel) {
+        mBluetoothServerMeterTunnel = mBluetoothServerMeterTunnel;
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_bluetooth_client, container, false);
+        View view = inflater.inflate(R.layout.fragment_icabby_connection, container, false);
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
 
@@ -85,6 +86,7 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
         getActivity().registerReceiver(mPairReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
 
         return view;
+
     }
 
     private void startScanDevice() {
@@ -92,7 +94,6 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
 
         if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
-//            Log.d(TAG, "btnDiscover: Canceling discovery.");
 
             //check BT permissions in manifest
             checkBTPermissions();
@@ -134,7 +135,6 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
                 // A Bluetooth device was found
                 // Getting device information from the intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-//                Log.i(TAG, "Device found: " + device.getName() + "; MAC " + device.getAddress());
                 mListDevice.add(device);
                 mDeviceListAdapter.notifyDataSetChanged();
             }
@@ -163,13 +163,27 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
     }
 
     @Override
-    public void onSelectConnectionDevice(final int position) {
+    public void onConnectionToPim(final int position) {
         BluetoothDevice bluetoothDevice = mListDevice.get(position);
         mBluetoothServer.connectToServer(bluetoothDevice);
 
         bluetoothDevice.getUuids();
         if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
             mBluetoothServer.connectToServer(bluetoothDevice);
+        } else {
+            Toast.makeText(getContext(), "Pairing...", Toast.LENGTH_SHORT).show();
+            pairDevice(bluetoothDevice);
+        }
+    }
+
+    @Override
+    public void onConnectionToMeterTunnel(final int position) {
+        BluetoothDevice bluetoothDevice = mListDevice.get(position);
+        mBluetoothServerMeterTunnel.connectToServer(bluetoothDevice);
+
+        bluetoothDevice.getUuids();
+        if (bluetoothDevice.getBondState() == BluetoothDevice.BOND_BONDED) {
+            mBluetoothServerMeterTunnel.connectToServer(bluetoothDevice);
         } else {
             Toast.makeText(getContext(), "Pairing...", Toast.LENGTH_SHORT).show();
             pairDevice(bluetoothDevice);
@@ -234,7 +248,7 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
         }
     }
 
-    void log(String log) {
-        Log.d("TAG ", log);
+    public interface ConnectingDevice {
+        void connectToDevice(int i, BluetoothDevice mDevice);
     }
 }

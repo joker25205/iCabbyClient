@@ -2,13 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/navigation_pim_client_connect"
+        android:id="@+id/navigation_bluetooth_deviceconnection"
         android:icon="@drawable/ic_pim_connect"
         android:title="@string/title_message_pim"/>
-    <item
-        android:id="@+id/navigation_tunnel_client_connect"
-        android:icon="@drawable/ic_tunnel_connect"
-        android:title="@string/title_message_meter_tunnel"/>
 
     <item
         android:id="@+id/navigation_send_data_to_pim"

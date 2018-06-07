@@ -17,6 +17,7 @@ import ua.com.icabbyclient.icabbyclient.ConnectedThreadListener;
 import ua.com.icabbyclient.icabbyclient.R;
 import ua.com.icabbyclient.icabbyclient.adapters.LogsAdapter;
 import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer;
+import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServerSendData;
 
 public class TunnelCommunicationFragment extends Fragment implements ConnectedThreadListener {
 
@@ -24,6 +25,12 @@ public class TunnelCommunicationFragment extends Fragment implements ConnectedTh
     private LogsAdapter mLogsAdapter;
     private RecyclerView mRecyclerView;
     private Handler mHandler;
+
+    private BluetoothServerSendData mBluetoothServerSendData;
+
+    public void setBluetoothServerSendData(BluetoothServerSendData bluetoothServerSendData) {
+        mBluetoothServerSendData = bluetoothServerSendData;
+    }
 
     public TunnelCommunicationFragment() {
         mHandler = new Handler() {
@@ -56,6 +63,7 @@ public class TunnelCommunicationFragment extends Fragment implements ConnectedTh
     public void onIncomingBtTunnelByte(final String meterData) {
         Message m = mHandler.obtainMessage(BluetoothServer.TUNNEL_MESSAGE, meterData);
         mHandler.sendMessage(m);
+//        mBluetoothServerSendData.send(new HwMeterPacket(HwMeterPacket.ID_ACK).toBytes());
     }
 
 }

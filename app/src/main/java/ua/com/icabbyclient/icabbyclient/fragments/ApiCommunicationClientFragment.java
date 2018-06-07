@@ -21,9 +21,9 @@ import ua.com.icabbyclient.icabbyclient.ConnectedThreadListener;
 import ua.com.icabbyclient.icabbyclient.R;
 import ua.com.icabbyclient.icabbyclient.adapters.LogsAdapter;
 import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer;
+import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServerSendData;
 import ua.com.icabbyclient.icabbyclient.model.Args;
 import ua.com.icabbyclient.icabbyclient.model.TripStatusRequest;
-import ua.com.icabbyclient.icabbyclient.utils.MeterCommand;
 
 
 @SuppressLint("ValidFragment")
@@ -36,7 +36,7 @@ public class ApiCommunicationClientFragment extends Fragment implements View.OnC
 
     private List<String> mLogsList = new ArrayList<>();
     private LogsAdapter mLogsAdapter;
-    private MeterFunctions mMeterFunctions;
+    private BluetoothServerSendData mBluetoothConnect;
 
     private Handler mHandler;
 
@@ -50,8 +50,8 @@ public class ApiCommunicationClientFragment extends Fragment implements View.OnC
         };
     }
 
-    public void setClickComand(MeterFunctions meterFunctions) {
-        mMeterFunctions = meterFunctions;
+    public void setBluetoothConnection(BluetoothServerSendData bluetoothConnect) {
+        mBluetoothConnect = bluetoothConnect;
     }
 
 
@@ -85,22 +85,23 @@ public class ApiCommunicationClientFragment extends Fragment implements View.OnC
             case R.id.start_ride:
                 String sendMessageMeterOn = getICabbyData("TRIP_STATUS", 320, 0, false, 320, TRIP_ID, "StartRide", false);
                 setPimMessage("---> Pim: " + sendMessageMeterOn);
-                mMeterFunctions.setMeterCommand(sendMessageMeterOn);
+                mBluetoothConnect.send(sendMessageMeterOn.getBytes());
                 break;
             case R.id.stop_ride:
                 String sendMessageUpdateTrip = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "UpdateRide", false);
                 setPimMessage("---> Pim: " + sendMessageUpdateTrip);
-                mMeterFunctions.setMeterCommand(sendMessageUpdateTrip);
+                mBluetoothConnect.send(sendMessageUpdateTrip.getBytes());
                 break;
             case R.id.finish_ride:
                 String sendMessageStopRide = getICabbyData("TRIP_STATUS", 600, 400, false, 1000, TRIP_ID, "StopRide", false);
                 setPimMessage("---> Pim: " + sendMessageStopRide);
-                mMeterFunctions.setMeterCommand(sendMessageStopRide);
+                mBluetoothConnect.send(sendMessageStopRide.getBytes());
+
                 break;
             case R.id.update_trip:
                 String sendMessageFinishRide = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "FinishRide", false);
                 setPimMessage("---> Pim: " + sendMessageFinishRide);
-                mMeterFunctions.setMeterCommand(sendMessageFinishRide);
+                mBluetoothConnect.send(sendMessageFinishRide.getBytes());
                 break;
         }
     }
@@ -139,7 +140,4 @@ public class ApiCommunicationClientFragment extends Fragment implements View.OnC
         mHandler.sendMessage(m);
     }
 
-    public interface MeterFunctions {
-        void setMeterCommand(String message);
-    }
 }

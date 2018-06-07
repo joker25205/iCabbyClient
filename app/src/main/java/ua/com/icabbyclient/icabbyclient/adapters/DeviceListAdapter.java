@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
@@ -54,10 +53,17 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             }
         });
 
-        holder.selectDevice.setOnClickListener(new View.OnClickListener() {
+        holder.connectToPimApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                mListener.onSelectConnectionDevice(position);
+                mListener.onConnectionToPim(position);
+            }
+        });
+
+        holder.connectToTunnelApp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                mListener.onConnectionToMeterTunnel(position);
             }
         });
     }
@@ -71,7 +77,8 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         public TextView title;
         public TextView macAddress;
         public Button pairBtn;
-        public LinearLayout selectDevice;
+        public Button connectToPimApp;
+        public Button connectToTunnelApp;
 
 
         public ViewHolder(View view) {
@@ -79,13 +86,17 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             title = (TextView) view.findViewById(R.id.title);
             macAddress = (TextView) view.findViewById(R.id.tv_mac_address);
             pairBtn = (Button) view.findViewById(R.id.pair_button);
-            selectDevice = (LinearLayout) view.findViewById(R.id.select_device);
+            connectToPimApp = (Button) view.findViewById(R.id.connect_to_pim_app);
+            connectToTunnelApp = (Button) view.findViewById(R.id.connect_to_tunnel_app);
         }
     }
 
     public interface OnPairButtonClickListener {
+
         void onPairButtonClick(int position);
 
-        void onSelectConnectionDevice(int position);
+        void onConnectionToPim(int position);
+
+        void onConnectionToMeterTunnel(int position);
     }
 }

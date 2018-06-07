@@ -1,12 +1,8 @@
 package ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper;
 
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
@@ -16,7 +12,7 @@ import java.util.UUID;
 
 import ua.com.icabbyclient.icabbyclient.ConnectedThreadListener;
 
-public class BluetoothServer {
+public class BluetoothServer implements BluetoothServerConnecting, BluetoothServerSendData {
     public static final int MSG_ID = 1;
     public static final int PIM_MESSAGE = 2;
     public static final int TUNNEL_MESSAGE = 3;
@@ -56,6 +52,7 @@ public class BluetoothServer {
         }
     }
 
+    @Override
     public synchronized void connectToServer(BluetoothDevice device) {
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
@@ -69,6 +66,7 @@ public class BluetoothServer {
         mConnectThread.start();
     }
 
+    @Override
     public void send(byte[] b) {
         mConnectedThread.write(b);
     }

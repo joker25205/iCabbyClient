@@ -2,8 +2,6 @@ package ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
@@ -14,14 +12,11 @@ import java.util.UUID;
 import ua.com.icabbyclient.icabbyclient.ConnectedThreadListener;
 import ua.com.icabbyclient.icabbyclient.utils.HwMeterPacket;
 
-public class BluetoothServerMeterTunnel {
-    public static final int MSG_ID = 1;
-    public static final int LOG_ID = 2;
+public class BluetoothServerMeterTunnel implements BluetoothServerConnecting, BluetoothServerSendData {
     private final String TAG = "BluetoothController";
     private final String mServerName;
     private final UUID mServerId;
 
-    private Handler mHandler;
 
     private int mState;
     private final int STATE_DISCONNECTED = 0;
@@ -36,15 +31,12 @@ public class BluetoothServerMeterTunnel {
 
 
     public BluetoothServerMeterTunnel(final String serverName, final UUID serverId, final ConnectedThreadListener connectedThreadListener) {
-        this.mServerName = serverName;
+        mServerName = serverName;
         mServerId = serverId;
         mConnectedThreadListener = connectedThreadListener;
         setState(STATE_DISCONNECTED);
     }
 
-    public void setHandler(final Handler handler) {
-        mHandler = handler;
-    }
 
     public synchronized void startServer() {
         // destroy currently connection if it exists
@@ -59,7 +51,7 @@ public class BluetoothServerMeterTunnel {
         }
 
     }
-
+    @Override
     public synchronized void connectToServer(BluetoothDevice device) {
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
@@ -74,6 +66,7 @@ public class BluetoothServerMeterTunnel {
         mConnectThread.start();
     }
 
+    @Override
     public void send(byte[] b) {
         mConnectedThread.write(b);
     }
