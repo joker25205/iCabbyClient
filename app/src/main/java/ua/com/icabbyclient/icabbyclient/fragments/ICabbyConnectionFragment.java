@@ -11,7 +11,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -30,13 +29,11 @@ import java.util.List;
 import ua.com.icabbyclient.icabbyclient.MainActivity;
 import ua.com.icabbyclient.icabbyclient.R;
 import ua.com.icabbyclient.icabbyclient.adapters.DeviceListAdapter;
-import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer;
+import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServerMeterTunnel;
 import ua.com.icabbyclient.icabbyclient.utils.SeparatorDecoration;
 
-
 @SuppressLint("ValidFragment")
-public class BluetoothClientFragment extends Fragment implements DeviceListAdapter.OnPairButtonClickListener{
-
+public class ICabbyConnectionFragment extends Fragment implements DeviceListAdapter.OnPairButtonClickListener{
     private static final int REQUEST_ENABLE_BT = 1;
 
     private BluetoothAdapter mBluetoothAdapter;
@@ -45,22 +42,21 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
 
     RecyclerView mRecyclerView;
 
-    private BluetoothServer mBluetoothServer;
+    private BluetoothServerMeterTunnel mBluetoothServer;
 
-    public BluetoothClientFragment(BluetoothServer bluetoothServer) {
+
+    public ICabbyConnectionFragment(final BluetoothServerMeterTunnel bluetoothServer) {
         mBluetoothServer = bluetoothServer;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_bluetooth_client, container, false);
+        View view = inflater.inflate(R.layout.fragment_icabby_connection, container, false);
 
         mRecyclerView = view.findViewById(R.id.recycler_view);
 
@@ -85,6 +81,7 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
         getActivity().registerReceiver(mPairReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
 
         return view;
+
     }
 
     private void startScanDevice() {
@@ -92,7 +89,6 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
 
         if (mBluetoothAdapter.isDiscovering()) {
             mBluetoothAdapter.cancelDiscovery();
-//            Log.d(TAG, "btnDiscover: Canceling discovery.");
 
             //check BT permissions in manifest
             checkBTPermissions();
@@ -134,7 +130,6 @@ public class BluetoothClientFragment extends Fragment implements DeviceListAdapt
                 // A Bluetooth device was found
                 // Getting device information from the intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-//                Log.i(TAG, "Device found: " + device.getName() + "; MAC " + device.getAddress());
                 mListDevice.add(device);
                 mDeviceListAdapter.notifyDataSetChanged();
             }

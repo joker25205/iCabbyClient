@@ -3,7 +3,7 @@ package ua.com.icabbyclient.icabbyclient.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class ICabbyData {
+public class TripStatusRequest {
 
     @SerializedName("cmd")
     @Expose

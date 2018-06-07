@@ -1,9 +1,12 @@
 <resources>
     <string name="app_name">iCabbyClient</string>
-    <string name="title_home">ConnectPIM</string>
-    <string name="title_connect_meter_tunnel">ConnectTunnel</string>
-    <string name="title_icabby_fake_meter">iCabby Meter</string>
-    <string name="title_pim">Message PIM</string>
-    <string name="title_message_meter">Message Meter</string>
+    <string name="title_message_pim">Connection to PIM</string>
+    <string name="title_message_meter_tunnel">Connection to Tunnel</string>
+    <string name="title_message_icabby">Communicate with PIM</string>
+    <string name="title_message_meter">Communicate with Meter</string>
+    <string name="start_ride">Start ride</string>
+    <string name="stop_ride">Stop ride</string>
+    <string name="finish_ride">Finish ride</string>
+    <string name="update_trip">Update trip</string>
 
 </resources>

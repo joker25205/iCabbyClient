@@ -1,4 +1,4 @@
-package ua.com.icabbyclient.icabbyclient.bluetooth_helper;
+package ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper;
 
 public interface BluetoothMessageSender {
 

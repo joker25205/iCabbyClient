@@ -2,38 +2,39 @@ package ua.com.icabbyclient.icabbyclient.fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
-import com.google.gson.Gson;
+import java.util.ArrayList;
+import java.util.List;
 
 import ua.com.icabbyclient.icabbyclient.R;
-import ua.com.icabbyclient.icabbyclient.bluetooth_helper.BluetoothHelperService;
-import ua.com.icabbyclient.icabbyclient.bluetooth_helper.BluetoothMessageSender;
-import ua.com.icabbyclient.icabbyclient.bluetooth_helper.BluetoothServer;
-import ua.com.icabbyclient.icabbyclient.model.Args;
-import ua.com.icabbyclient.icabbyclient.model.ICabbyData;
+import ua.com.icabbyclient.icabbyclient.adapters.LogsAdapter;
+import ua.com.icabbyclient.icabbyclient.utils.MeterCommand;
 
 
 @SuppressLint("ValidFragment")
-public class ICabbyClientFragment extends Fragment implements BluetoothMessageSender, BluetoothHelperService.Listener, View.OnClickListener {
+public class ICabbyClientFragment extends Fragment implements View.OnClickListener, BaseFragment {
 
     private static final String TRIP_ID = "A2514F2";
-    Button btnMiterOn;
-    Button btnMiterAddExtras;
-    Button btnMiterTimeOff;
-    Button btnMiterOff;
-    Button btnMiterUpdateTripInformation;
 
-    private BluetoothServer mBluetoothServer;
+    private Button btnStartRide, btnStopRide, btnFinishRide, btnMiterUpdateTripInformation;
+    private RecyclerView mRecyclerView;
 
-    public ICabbyClientFragment(final BluetoothServer bluetoothServer) {
-        mBluetoothServer = bluetoothServer;
+    List<String> mLogsList = new ArrayList<>();
+    LogsAdapter mLogsAdapter;
+
+    Handler mHandler;
+    MeterFunctions mMeterFunctions;
+
+    public ICabbyClientFragment(MeterFunctions meterFunctions) {
+        mMeterFunctions = meterFunctions;
     }
 
 
@@ -41,78 +42,49 @@ public class ICabbyClientFragment extends Fragment implements BluetoothMessageSe
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_icabby_client, container, false);
 
-        btnMiterOn = view.findViewById(R.id.miter_on);
-        btnMiterOn.setOnClickListener(this);
-        btnMiterTimeOff = view.findViewById(R.id.miter_time_off);
-        btnMiterTimeOff.setOnClickListener(this);
-        btnMiterAddExtras = view.findViewById(R.id.miter_add_extras);
-        btnMiterAddExtras.setOnClickListener(this);
-        btnMiterOff = view.findViewById(R.id.miter_off);
-        btnMiterOff.setOnClickListener(this);
+        btnStartRide = view.findViewById(R.id.start_ride);
+        btnStartRide.setOnClickListener(this);
+        btnStopRide = view.findViewById(R.id.stop_ride);
+        btnStopRide.setOnClickListener(this);
+        btnFinishRide = view.findViewById(R.id.finish_ride);
+        btnFinishRide.setOnClickListener(this);
         btnMiterUpdateTripInformation = view.findViewById(R.id.update_trip);
         btnMiterUpdateTripInformation.setOnClickListener(this);
+
+        mRecyclerView = view.findViewById(R.id.logs_recycler_view);
+        mLogsAdapter = new LogsAdapter(mLogsList);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRecyclerView.setAdapter(mLogsAdapter);
+
         return view;
-    }
-
-    @Override
-    public void onBtSendRawMessage(final int message, final String rawMsg) {
-
-    }
-
-    @Override
-    public void onBtStateChanged(final int previous, final String current) {
-
-    }
-
-    @Override
-    public void onBtRawMessage(final int message, final String rawMsg) {
-
     }
 
     @Override
     public void onClick(final View v) {
         switch (v.getId()) {
-            case R.id.miter_on:
-                Toast.makeText(getContext(), "Click Miter On", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterOn = getICabbyData("TRIP_STATUS", 320, 0, false, 320, TRIP_ID, "MeterOn", false);
-                mBluetoothServer.send(sendMessageMeterOn.getBytes());
+            case R.id.start_ride:
+                mMeterFunctions.setMeterCommand(MeterCommand.START_RIDE);
                 break;
-            case R.id.miter_time_off:
-                Toast.makeText(getContext(), "Click Miter Time Off", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterOff = getICabbyData("TRIP_STATUS", 600, 400, false, 1000, TRIP_ID, "MeterTimeOff", false);
-                mBluetoothServer.send(sendMessageMeterOff.getBytes());
+            case R.id.stop_ride:
+                mMeterFunctions.setMeterCommand(MeterCommand.STOP_RIDE);
                 break;
-            case R.id.miter_add_extras:
-                Toast.makeText(getContext(), "Click Miter Add Extras", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterAddExtras = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "MeterExtras", false);
-                mBluetoothServer.send(sendMessageMeterAddExtras.getBytes());
-                break;
-            case R.id.miter_off:
-                Toast.makeText(getContext(), "Click Miter Off", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterMeterOff = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "MeterOff", false);
-                mBluetoothServer.send(sendMessageMeterMeterOff.getBytes());
+            case R.id.finish_ride:
+                mMeterFunctions.setMeterCommand(MeterCommand.FINISH_RIDE);
                 break;
             case R.id.update_trip:
-                Toast.makeText(getContext(), "Click Update Trip information", Toast.LENGTH_SHORT).show();
-                String sendMessageMeterMeterUpdateTrip = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "UpdateTrip", false);
-                mBluetoothServer.send(sendMessageMeterMeterUpdateTrip.getBytes());
+                mMeterFunctions.setMeterCommand(MeterCommand.EXTRAS);
                 break;
         }
     }
 
-    @NonNull
-    private String getICabbyData(final String cmd, final int fare, final int extras, final boolean flatRate, final int totalAmount, final String tripID, final String status, final boolean account) {
-        ICabbyData iCabbyData = new ICabbyData();
-        iCabbyData.setCmd(cmd);
-        Args args = new Args();
-        args.setFare(fare);
-        args.setExtras(extras);
-        args.setFlatRate(false);
-        args.setStatus(status);
-        args.setTotalAmount(totalAmount);
-        args.setTripId(tripID);
-        args.setAccount(account);
-        iCabbyData.setArgs(args);
-        return new Gson().toJson(iCabbyData);
+    @Override
+    public void updateList(final List<String> list) {
+        mLogsList = list;
+        if (mLogsAdapter != null)
+            mLogsAdapter.notifyDataSetChanged();
+    }
+
+    public interface MeterFunctions {
+        void setMeterCommand(MeterCommand mMeterCommand);
     }
 }

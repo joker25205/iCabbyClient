@@ -1,5 +1,4 @@
-package ua.com.icabbyclient.icabbyclient.bluetooth_helper;
-
+package ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -14,7 +13,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-public class BluetoothServer {
+import ua.com.icabbyclient.icabbyclient.ConnectedThreadListener;
+import ua.com.icabbyclient.icabbyclient.utils.HwMeterPacket;
+
+public class BluetoothServerMeterTunnel {
     public static final int MSG_ID = 1;
     public static final int LOG_ID = 2;
     private final String TAG = "BluetoothController";
@@ -29,16 +31,19 @@ public class BluetoothServer {
     private final int STATE_CONNECTING = 2;
     private final int STATE_CONNECTED = 3;
 
-    private AcceptThread mAcceptThread;
-    private ConnectThread mConnectThread;
-    private ConnectedThread mConnectedThread;
+    private BluetoothServerMeterTunnel.AcceptThread mAcceptThread;
+    private BluetoothServerMeterTunnel.ConnectThread mConnectThread;
+    private BluetoothServerMeterTunnel.ConnectedThread mConnectedThread;
+
+    private final ConnectedThreadListener mConnectedThreadListener;
 
 
-    public BluetoothServer(final String serverName, final UUID serverId, Handler handler) {
+    public BluetoothServerMeterTunnel(final String serverName, final UUID serverId, Handler handler, final ConnectedThreadListener connectedThreadListener) {
         this.mServerName = serverName;
         mServerId = serverId;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mHandler = handler;
+        mConnectedThreadListener = connectedThreadListener;
         setState(STATE_DISCONNECTED);
     }
 
@@ -59,7 +64,7 @@ public class BluetoothServer {
             mAcceptThread = null;
         }
         // starting listen for new entry connection
-        mAcceptThread = new AcceptThread();
+        mAcceptThread = new BluetoothServerMeterTunnel.AcceptThread();
         mAcceptThread.start();
     }
 
@@ -76,7 +81,7 @@ public class BluetoothServer {
             mConnectThread.cancel();
             mConnectThread = null;
         }
-        mConnectThread = new ConnectThread(device);
+        mConnectThread = new BluetoothServerMeterTunnel.ConnectThread(device);
         mConnectThread.start();
     }
 
@@ -103,7 +108,7 @@ public class BluetoothServer {
             mAcceptThread = null;
         }
 
-        mConnectedThread = new ConnectedThread(socket);
+        mConnectedThread = new BluetoothServerMeterTunnel.ConnectedThread(socket);
         mConnectedThread.start();
 
     }
@@ -197,7 +202,7 @@ public class BluetoothServer {
                 return;
             }
 
-            synchronized (BluetoothServer.this) {
+            synchronized (BluetoothServerMeterTunnel.this) {
                 mConnectThread = null;
             }
 
@@ -247,9 +252,29 @@ public class BluetoothServer {
 
             while (mState == STATE_CONNECTED) {
                 try {
-                    numBytes = mmInStream.read(mmBuffer);
-                    Message m = mHandler.obtainMessage(MSG_ID, numBytes, 1, mmBuffer);
-                    mHandler.sendMessage(m);
+                    final byte[] buffer = new byte[1024];
+
+                    byte stx = (byte) mmInStream.read();
+
+                    if (stx == HwMeterPacket.STX) {
+                        buffer[0] = HwMeterPacket.STX;
+                        byte id = (byte) mmInStream.read();
+                        buffer[1] = id;
+                        int len = mmInStream.read();
+
+                        for (int i = 0; i < len; i++) {
+                            buffer[3 + i] = (byte) mmInStream.read();
+                        }
+                        byte bcc = (byte) mmInStream.read();
+                        buffer[3 + len] = bcc;
+                        buffer[3 + len + 1] = (byte) mmInStream.read();
+                        HwMeterPacket packet = new HwMeterPacket();
+                        if (packet.fromBytesLongData(buffer, len)) {
+                            Log.d("MeterData", packet.toHumanString());
+                            mConnectedThreadListener.onIncomingBtTunnelByte(packet.toHumanString());
+                            write(new HwMeterPacket(HwMeterPacket.ID_ACK).toBytes());
+                        }
+                    }
                 } catch (IOException e) {
                     startServer();
                     break;
@@ -257,15 +282,15 @@ public class BluetoothServer {
             }
         }
 
+
         public void write(byte[] bytes) {
             try {
                 mmOutStream.write(bytes);
-
+                mmOutStream.flush();
                 // Share the sent message with the UI activity.
 
             } catch (IOException e) {
                 Log.d(TAG, "code 11");
-
                 // Send a failure message back to the activity.
             }
         }
@@ -305,3 +330,4 @@ public class BluetoothServer {
     }
 
 }
+

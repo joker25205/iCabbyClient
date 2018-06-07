@@ -12,47 +12,40 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/miter_on"
+            android:id="@+id/start_ride"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Miter ON"/>
+            android:text="@string/start_ride"/>
 
         <Button
-            android:id="@+id/miter_time_off"
+            android:id="@+id/stop_ride"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Time Off"/>
+            android:text="@string/stop_ride"/>
+        <Button
+            android:id="@+id/update_trip"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/update_trip"/>
 
         <Button
-            android:id="@+id/miter_add_extras"
+            android:id="@+id/finish_ride"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="Extras"/>
-
-        <Button
-            android:id="@+id/miter_off"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:text="Miter Off"/>
+            android:text="@string/finish_ride"/>
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/show_sent_information"
+    <android.support.v7.widget.RecyclerView
+        android:layout_weight="2"
+        android:id="@+id/logs_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="ICabby Client\n Show sent information"/>
+        android:layout_height="match_parent"/>
 
-    <Button
-        android:id="@+id/update_trip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Update trip"/>
+
 
 </LinearLayout>
