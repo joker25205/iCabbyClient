@@ -19,11 +19,10 @@ import ua.com.icabbyclient.icabbyclient.ConnectedThreadListener;
 public class BluetoothServer {
     public static final int MSG_ID = 1;
     public static final int PIM_MESSAGE = 2;
+    public static final int TUNNEL_MESSAGE = 3;
     private final String TAG = "BluetoothController";
     private final String mServerName;
     private final UUID mServerId;
-    private final BluetoothAdapter mBluetoothAdapter;
-    private Handler mHandler;
 
     private int mState;
     private final int STATE_DISCONNECTED = 0;
@@ -31,18 +30,15 @@ public class BluetoothServer {
     private final int STATE_CONNECTING = 2;
     private final int STATE_CONNECTED = 3;
 
-    private AcceptThread mAcceptThread;
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
 
     private final ConnectedThreadListener mConnectedThreadListener;
 
 
-    public BluetoothServer(final String serverName, final UUID serverId, Handler handler, final  ConnectedThreadListener connectedThreadListener) {
+    public BluetoothServer(final String serverName, final UUID serverId,final  ConnectedThreadListener connectedThreadListener) {
         this.mServerName = serverName;
         mServerId = serverId;
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mHandler = handler;
         mConnectedThreadListener = connectedThreadListener;
         setState(STATE_DISCONNECTED);
     }
@@ -58,24 +54,12 @@ public class BluetoothServer {
             mConnectThread.cancel();
             mConnectThread = null;
         }
-        // destroy currently server if it exists
-        if (mAcceptThread != null) {
-            mAcceptThread.interrupt();
-            mAcceptThread = null;
-        }
-        // starting listen for new entry connection
-        mAcceptThread = new AcceptThread();
-        mAcceptThread.start();
     }
 
     public synchronized void connectToServer(BluetoothDevice device) {
         if (mConnectedThread != null) {
             mConnectedThread.cancel();
             mConnectedThread = null;
-        }
-        if (mAcceptThread != null) {
-            mAcceptThread.cancel();
-            mAcceptThread = null;
         }
         if (mConnectThread != null) {
             mConnectThread.cancel();
@@ -103,64 +87,9 @@ public class BluetoothServer {
             mConnectedThread = null;
         }
 
-        if (mAcceptThread != null) {
-            mAcceptThread.cancel();
-            mAcceptThread = null;
-        }
-
         mConnectedThread = new ConnectedThread(socket);
         mConnectedThread.start();
 
-    }
-
-    class AcceptThread extends Thread {
-        private final BluetoothServerSocket mmServerSocket;
-
-        public AcceptThread() {
-            BluetoothServerSocket tmp = null;
-            try {
-                tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(mServerName, mServerId);
-            } catch (IOException e) {
-                Log.e(TAG, "> ACCEPT THREAD >" + e);
-            }
-            mmServerSocket = tmp;
-            if (mmServerSocket != null) {
-                setState(STATE_LISTENING);
-            } else
-                setState(STATE_DISCONNECTED);
-
-        }
-
-        public void run() {
-            BluetoothSocket socket;
-            while (mState == STATE_LISTENING) {
-                try {
-                    socket = mmServerSocket.accept();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
-
-                if (socket != null) {
-                    onConnect(socket);
-                    try {
-                        mmServerSocket.close();
-                    } catch (IOException e) {
-                        Log.d(TAG, "code 3");
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Closes the connect socket and causes the thread to finish.
-        public void cancel() {
-            try {
-                mmServerSocket.close();
-            } catch (IOException e) {
-                Log.d(TAG, "code 4");
-            }
-        }
     }
 
     private class ConnectThread extends Thread {
@@ -186,7 +115,6 @@ public class BluetoothServer {
 
         public void run() {
             // Cancel discovery because it otherwise slows down the connection.
-            mBluetoothAdapter.cancelDiscovery();
 
             try {
                 // Connect to the remote device through the socket. This call blocks
@@ -308,8 +236,7 @@ public class BluetoothServer {
     }
 
     private void log(String log) {
-        Message m = mHandler.obtainMessage(PIM_MESSAGE, log);
-        mHandler.sendMessage(m);
+        mConnectedThreadListener.onIncomingBtTunnelByte(log);
         Log.d(TAG, log);
     }
 

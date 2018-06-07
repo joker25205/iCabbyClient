@@ -1,8 +1,6 @@
 package ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
 import android.os.Message;
@@ -22,7 +20,7 @@ public class BluetoothServerMeterTunnel {
     private final String TAG = "BluetoothController";
     private final String mServerName;
     private final UUID mServerId;
-    private final BluetoothAdapter mBluetoothAdapter;
+
     private Handler mHandler;
 
     private int mState;
@@ -31,20 +29,21 @@ public class BluetoothServerMeterTunnel {
     private final int STATE_CONNECTING = 2;
     private final int STATE_CONNECTED = 3;
 
-    private BluetoothServerMeterTunnel.AcceptThread mAcceptThread;
     private BluetoothServerMeterTunnel.ConnectThread mConnectThread;
     private BluetoothServerMeterTunnel.ConnectedThread mConnectedThread;
 
     private final ConnectedThreadListener mConnectedThreadListener;
 
 
-    public BluetoothServerMeterTunnel(final String serverName, final UUID serverId, Handler handler, final ConnectedThreadListener connectedThreadListener) {
+    public BluetoothServerMeterTunnel(final String serverName, final UUID serverId, final ConnectedThreadListener connectedThreadListener) {
         this.mServerName = serverName;
         mServerId = serverId;
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mHandler = handler;
         mConnectedThreadListener = connectedThreadListener;
         setState(STATE_DISCONNECTED);
+    }
+
+    public void setHandler(final Handler handler) {
+        mHandler = handler;
     }
 
     public synchronized void startServer() {
@@ -58,14 +57,7 @@ public class BluetoothServerMeterTunnel {
             mConnectThread.cancel();
             mConnectThread = null;
         }
-        // destroy currently server if it exists
-        if (mAcceptThread != null) {
-            mAcceptThread.interrupt();
-            mAcceptThread = null;
-        }
-        // starting listen for new entry connection
-        mAcceptThread = new BluetoothServerMeterTunnel.AcceptThread();
-        mAcceptThread.start();
+
     }
 
     public synchronized void connectToServer(BluetoothDevice device) {
@@ -73,10 +65,7 @@ public class BluetoothServerMeterTunnel {
             mConnectedThread.cancel();
             mConnectedThread = null;
         }
-        if (mAcceptThread != null) {
-            mAcceptThread.cancel();
-            mAcceptThread = null;
-        }
+
         if (mConnectThread != null) {
             mConnectThread.cancel();
             mConnectThread = null;
@@ -103,65 +92,12 @@ public class BluetoothServerMeterTunnel {
             mConnectedThread = null;
         }
 
-        if (mAcceptThread != null) {
-            mAcceptThread.cancel();
-            mAcceptThread = null;
-        }
 
         mConnectedThread = new BluetoothServerMeterTunnel.ConnectedThread(socket);
         mConnectedThread.start();
 
     }
 
-    class AcceptThread extends Thread {
-        private final BluetoothServerSocket mmServerSocket;
-
-        public AcceptThread() {
-            BluetoothServerSocket tmp = null;
-            try {
-                tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(mServerName, mServerId);
-            } catch (IOException e) {
-                Log.e(TAG, "> ACCEPT THREAD >" + e);
-            }
-            mmServerSocket = tmp;
-            if (mmServerSocket != null) {
-                setState(STATE_LISTENING);
-            } else
-                setState(STATE_DISCONNECTED);
-
-        }
-
-        public void run() {
-            BluetoothSocket socket;
-            while (mState == STATE_LISTENING) {
-                try {
-                    socket = mmServerSocket.accept();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    break;
-                }
-
-                if (socket != null) {
-                    onConnect(socket);
-                    try {
-                        mmServerSocket.close();
-                    } catch (IOException e) {
-                        Log.d(TAG, "code 3");
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Closes the connect socket and causes the thread to finish.
-        public void cancel() {
-            try {
-                mmServerSocket.close();
-            } catch (IOException e) {
-                Log.d(TAG, "code 4");
-            }
-        }
-    }
 
     private class ConnectThread extends Thread {
         private final BluetoothSocket mmSocket;
@@ -186,7 +122,6 @@ public class BluetoothServerMeterTunnel {
 
         public void run() {
             // Cancel discovery because it otherwise slows down the connection.
-            mBluetoothAdapter.cancelDiscovery();
 
             try {
                 // Connect to the remote device through the socket. This call blocks
@@ -324,8 +259,7 @@ public class BluetoothServerMeterTunnel {
     }
 
     private void log(String log) {
-        Message m = mHandler.obtainMessage(LOG_ID, log);
-        mHandler.sendMessage(m);
+        mConnectedThreadListener.onIncomingBtTunnelByte(log);
         Log.d(TAG, log);
     }
 

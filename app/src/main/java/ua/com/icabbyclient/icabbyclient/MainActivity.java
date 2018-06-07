@@ -1,89 +1,45 @@
 package ua.com.icabbyclient.icabbyclient;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
 
-import com.google.gson.Gson;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer;
 import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServerMeterTunnel;
+import ua.com.icabbyclient.icabbyclient.fragments.ApiCommunicationClientFragment;
 import ua.com.icabbyclient.icabbyclient.fragments.BluetoothClientFragment;
-import ua.com.icabbyclient.icabbyclient.fragments.ICabbyClientFragment;
 import ua.com.icabbyclient.icabbyclient.fragments.ICabbyConnectionFragment;
-import ua.com.icabbyclient.icabbyclient.fragments.MeterCommunicationMessageFragment;
-import ua.com.icabbyclient.icabbyclient.model.Args;
-import ua.com.icabbyclient.icabbyclient.model.TripStatusRequest;
-import ua.com.icabbyclient.icabbyclient.utils.MeterCommand;
+import ua.com.icabbyclient.icabbyclient.fragments.TunnelCommunicationFragment;
 
-import static ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer.PIM_MESSAGE;
+public class MainActivity extends AppCompatActivity implements ApiCommunicationClientFragment.MeterFunctions {
 
-public class MainActivity extends AppCompatActivity implements ConnectedThreadListener, ICabbyClientFragment.MeterFunctions {
-
-    public static UUID sUUID_PIM = UUID.fromString("c90c5b86-536f-11e8-9c2d-fa7ae01bbebc");
     public static final String DEVICE_NAME = "PimServer";
-
-    public static UUID sUUID_Tunnel = UUID.fromString("c90c5b86-536f-11e8-9c2d-fa7ae01bbebc");
     private static final String TUNNEL_SEVER_NAME = "TunnelServer";
-
-
-    private static final String TRIP_ID = "A2514F2";
+    public static UUID sUUID_PIM = UUID.fromString("895a86e2-6a31-11e8-adc0-fa7ae01bbebc");
+    public static UUID sUUID_Tunnel = UUID.fromString("c90c5b86-536f-11e8-9c2d-fa7ae01bbebc");
 
     private BluetoothServer mBluetoothServer;
     private BluetoothServerMeterTunnel mBluetoothServerMeter;
 
-    Handler mHandlerPim;
-    Handler mHandlerMeterTunel;
-
-    private MeterCommunicationMessageFragment meterCommunicationMessageFragment;
-    private ICabbyClientFragment mICabbyClientFragment;
-    List<String> mMeterMessage = new ArrayList<>();
-    List<String> mICabbyMessage = new ArrayList<>();
-
+    private TunnelCommunicationFragment mTunnelCommunicationFragment;
+    private ApiCommunicationClientFragment mApiCommunicationClientFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mHandlerPim = new Handler() {
-            @Override
-            public void handleMessage(final Message msg) {
-                super.handleMessage(msg);
-                if (msg.what == BluetoothServer.MSG_ID) {
-                    log("< " + new String(((byte[]) msg.obj), 0, msg.arg1));
-                }
-                if (msg.what == PIM_MESSAGE) {
-                    log((String) msg.obj);
-                }
-            }
-        };
+        mTunnelCommunicationFragment = new TunnelCommunicationFragment();
+        mApiCommunicationClientFragment = new ApiCommunicationClientFragment();
+        mApiCommunicationClientFragment.setClickComand(this);
 
-
-        mHandlerMeterTunel = new Handler() {
-            @Override
-            public void handleMessage(final Message msg) {
-                super.handleMessage(msg);
-                logMeter((String) msg.obj);
-            }
-        };
-
-        mBluetoothServer = new BluetoothServer(DEVICE_NAME, sUUID_PIM, mHandlerPim, this);
-
-        mBluetoothServerMeter = new BluetoothServerMeterTunnel(TUNNEL_SEVER_NAME, sUUID_Tunnel, mHandlerMeterTunel, this);
-
-        meterCommunicationMessageFragment = new MeterCommunicationMessageFragment();
-        mICabbyClientFragment = new ICabbyClientFragment(this);
+        mBluetoothServer = new BluetoothServer(DEVICE_NAME, sUUID_PIM, mApiCommunicationClientFragment);
+        mBluetoothServerMeter = new BluetoothServerMeterTunnel(TUNNEL_SEVER_NAME, sUUID_Tunnel, mTunnelCommunicationFragment);
 
         if (savedInstanceState == null) {
             addFragment(new BluetoothClientFragment(mBluetoothServer));
@@ -92,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements ConnectedThreadLi
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
-
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -107,10 +62,10 @@ public class MainActivity extends AppCompatActivity implements ConnectedThreadLi
                     replaceFragment(new ICabbyConnectionFragment(mBluetoothServerMeter));
                     return true;
                 case R.id.navigation_send_data_to_pim:
-                    replaceFragment(mICabbyClientFragment);
+                    replaceFragment(mApiCommunicationClientFragment);
                     return true;
                 case R.id.navigation_tunnel_communicate:
-                    replaceFragment(meterCommunicationMessageFragment);
+                    replaceFragment(mTunnelCommunicationFragment);
                     return true;
 
             }
@@ -133,78 +88,9 @@ public class MainActivity extends AppCompatActivity implements ConnectedThreadLi
                 .commit();
     }
 
-    void log(String log) {
-        setPimMessage("<--- Pim: " + log);
-        Log.d("iCabbyLogs: ", log);
-    }
-
-    private void setPimMessage(final String log) {
-        mICabbyMessage.add(log);
-        mICabbyClientFragment.updateList(mICabbyMessage);
-    }
-
-    void logMeter(String log) {
-        if (meterCommunicationMessageFragment != null) {
-            mMeterMessage.add(log);
-            meterCommunicationMessageFragment.updateList(mMeterMessage);
-        }
-        Log.d("MeterTunnelLogs: ", log);
-    }
-
     @Override
-    public void onIncomingBtByte(final byte[] b) {
-        mHandlerPim.sendMessage(mHandlerPim.obtainMessage(PIM_MESSAGE, new String(b)));
+    public void setMeterCommand(final String message) {
+        if (mBluetoothServer != null)
+            mBluetoothServer.send(message.getBytes());
     }
-
-    @Override
-    public void onIncomingBtTunnelByte(final String meterInfo) {
-        mHandlerMeterTunel.sendMessage(mHandlerPim.obtainMessage(PIM_MESSAGE, meterInfo));
-    }
-
-    @Override
-    public void onConnectedThreadError(final Throwable reason) {
-
-    }
-
-    @Override
-    public void setMeterCommand(final MeterCommand mMeterCommand) {
-        switch (mMeterCommand) {
-            case START_RIDE:
-                String sendMessageMeterOn = getICabbyData("TRIP_STATUS", 320, 0, false, 320, TRIP_ID, "StartRide", false);
-                mBluetoothServer.send(sendMessageMeterOn.getBytes());
-                setPimMessage("---> Pim: " + sendMessageMeterOn);
-                break;
-            case EXTRAS:
-                String sendMessageUpdateTrip = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "UpdateRide", false);
-                mBluetoothServer.send(sendMessageUpdateTrip.getBytes());
-                setPimMessage("---> Pim: " + sendMessageUpdateTrip);
-                break;
-            case STOP_RIDE:
-                String sendMessageStopRide = getICabbyData("TRIP_STATUS", 600, 400, false, 1000, TRIP_ID, "StopRide", false);
-                mBluetoothServer.send(sendMessageStopRide.getBytes());
-                setPimMessage("---> Pim: " + sendMessageStopRide);
-                break;
-            case FINISH_RIDE:
-                String sendMessageFinishRide = getICabbyData("TRIP_STATUS", 600, 800, false, 1400, TRIP_ID, "FinishRide", false);
-                mBluetoothServer.send(sendMessageFinishRide.getBytes());
-                setPimMessage("---> Pim: " + sendMessageFinishRide);
-                break;
-        }
-    }
-
-    private String getICabbyData(final String cmd, final int fare, final int extras, final boolean flatRate, final int totalAmount, final String tripID, final String status, final boolean account) {
-        TripStatusRequest iCabbyData = new TripStatusRequest();
-        iCabbyData.setCmd(cmd);
-        Args args = new Args();
-        args.setFare(fare);
-        args.setExtras(extras);
-        args.setFlatRate(false);
-        args.setStatus(status);
-        args.setTotalAmount(totalAmount);
-        args.setTripId(tripID);
-        args.setAccount(account);
-        iCabbyData.setArgs(args);
-        return new Gson().toJson(iCabbyData);
-    }
-
 }
