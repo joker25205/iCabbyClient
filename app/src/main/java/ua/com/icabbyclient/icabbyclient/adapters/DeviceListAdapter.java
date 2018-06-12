@@ -13,9 +13,6 @@ import java.util.List;
 
 import ua.com.icabbyclient.icabbyclient.R;
 
-/**
- * Created by Admin on 1/12/2018.
- */
 
 public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.ViewHolder> {
 
@@ -43,15 +40,6 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
         final BluetoothDevice device = mList.get(position);
         holder.title.setText(device.getName());
         holder.macAddress.setText(device.getAddress());
-        holder.pairBtn.setText((device.getBondState() == BluetoothDevice.BOND_BONDED) ? "Unpair" : "Pair");
-        holder.pairBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mListener != null) {
-                    mListener.onPairButtonClick(position);
-                }
-            }
-        });
 
         holder.connectToPimApp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,7 +64,6 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView title;
         public TextView macAddress;
-        public Button pairBtn;
         public Button connectToPimApp;
         public Button connectToTunnelApp;
 
@@ -85,15 +72,12 @@ public class DeviceListAdapter extends RecyclerView.Adapter<DeviceListAdapter.Vi
             super(view);
             title = (TextView) view.findViewById(R.id.title);
             macAddress = (TextView) view.findViewById(R.id.tv_mac_address);
-            pairBtn = (Button) view.findViewById(R.id.pair_button);
             connectToPimApp = (Button) view.findViewById(R.id.connect_to_pim_app);
             connectToTunnelApp = (Button) view.findViewById(R.id.connect_to_tunnel_app);
         }
     }
 
     public interface OnPairButtonClickListener {
-
-        void onPairButtonClick(int position);
 
         void onConnectionToPim(int position);
 
