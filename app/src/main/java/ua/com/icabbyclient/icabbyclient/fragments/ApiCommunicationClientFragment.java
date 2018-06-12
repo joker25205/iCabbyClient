@@ -20,7 +20,7 @@ import java.util.List;
 import ua.com.icabbyclient.icabbyclient.ConnectedThreadListener;
 import ua.com.icabbyclient.icabbyclient.R;
 import ua.com.icabbyclient.icabbyclient.adapters.LogsAdapter;
-import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer;
+import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothClientServer;
 import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServerSendData;
 import ua.com.icabbyclient.icabbyclient.model.Args;
 import ua.com.icabbyclient.icabbyclient.model.TripStatusRequest;
@@ -128,15 +128,8 @@ public class ApiCommunicationClientFragment extends Fragment implements View.OnC
     }
 
     @Override
-    public void onIncomingBtByte(final byte[] b) {
-        String s = new String(b);
-        Message m = mHandler.obtainMessage(BluetoothServer.PIM_MESSAGE, s);
-        mHandler.sendMessage(m);
-    }
-
-    @Override
-    public void onIncomingBtTunnelByte(final String meterData) {
-        Message m = mHandler.obtainMessage(BluetoothServer.PIM_MESSAGE, meterData);
+    public void onMessageReceived(final byte[] b) {
+        Message m = mHandler.obtainMessage(BluetoothClientServer.PIM_MESSAGE, new String(b));
         mHandler.sendMessage(m);
     }
 

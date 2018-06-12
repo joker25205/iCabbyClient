@@ -7,7 +7,7 @@ import java.util.Vector;
 
 public class HwMeterPacketParserQueue extends Thread {
 
-    private static final String TAG = "HwMeterPacketParser";
+    private static final String TAG_CLASS = "HwMeter";
 
     public interface Listener {
         public void onHwMeterParserResult(int event, Object obj);
@@ -48,7 +48,7 @@ public class HwMeterPacketParserQueue extends Thread {
 
     @Override
     public void run() {
-        Log.d(TAG, "HwMeterPacketParserQueue: start");
+        Log.d(TAG_CLASS, "HwMeterPacketParserQueue: start");
         if (mInterrupted) {
             return;
         }
@@ -65,7 +65,7 @@ public class HwMeterPacketParserQueue extends Thread {
                         mLockObject.wait();
                         continue;
                     } catch (InterruptedException e) {
-                        Log.e(TAG, e.getMessage(), e);
+                        Log.e(TAG_CLASS, e.getMessage(), e);
                         break;
                     }
                 }
@@ -74,9 +74,9 @@ public class HwMeterPacketParserQueue extends Thread {
                 return;
             }
             try {
-//                proceedPacket(packet);
+                proceedPacket(packet);
             } catch (Exception e) {
-                Log.e(TAG, e.getMessage(), e);
+                Log.e(TAG_CLASS, e.getMessage(), e);
                 e.printStackTrace();
             }
         }
@@ -88,7 +88,7 @@ public class HwMeterPacketParserQueue extends Thread {
 
     @Override
     public void interrupt() {
-        Log.d(TAG, "HwMeterPacketParserQueue: stop");
+        Log.d(TAG_CLASS, "HwMeterPacketParserQueue: stop");
         synchronized (mLockObject) {
             mInterrupted = true;
             mLockObject.notify();
@@ -96,120 +96,128 @@ public class HwMeterPacketParserQueue extends Thread {
         }
     }
 
-//    private void proceedPacket(HwMeterPacket p) {
-//        Log.d(TAG, "HwMeterPacketParserQueue: new packet" + p.getId());
-//        switch (p.getId()) {
-//            case HwMeterPacket.ID_REPORT_CURRENT_RATE:
-//                //this packet used for ping
-//                OnReportCurrentRate(p);
-//                break;
-//            case HwMeterPacket.ID_METER_ON_OFF_STATE_CHANGE:
-//                OnOffStateChange(p);
-//                break;
-//
-//            case HwMeterPacket.ID_REPORT_METER_STATUS:
-//                OnReportMeterStatus(p);
-//                break;
-//            case HwMeterPacket.ID_REPORT_METER_TIMED_OUT:
-//                OnMeterTimedOut(p);
-//                break;
-//            case HwMeterPacket.ID_METER_FAILURE_STATE_CHANGE:
-//                OnMeterError(p);
-//                break;
-//            case HwMeterPacket.ID_REPORT_METER_TRIP_DATA:
-//                OnTripData(p);
-//                break;
-//
-//            case HwMeterPacket.ID_REPORT_METER_TRIP_DATA_TLC:
-//                OnTripDataTcl(p);
-//                break;
-//
-//            case HwMeterPacket.ID_REPORT_METER_STATISTICS:
-////                OnMeterStatistic(p);
-//                break;
-//
-//            case HwMeterPacket.ID_REPORT_CURRENT_RUNNING_FARE:
-////                OnRunningFare(p);
-//                break;
-//            case HwMeterPacket.ID_MIN_FARE_AMOUNT:
-//                OnMinFare(p);
-//                break;
-//            case HwMeterPacket.ID_SET_NEGOTIATED_FARE:
-//            case HwMeterPacket.ID_SET_NEGOTIATED_FARE_AND_PASSENGERS:
-//                OnNegotiatedFare(p);
-//                break;
-//            case HwMeterPacket.ID_ICABBI_TRIP_ID_DRIVER_STATUS:
-//                OniCabbiTripIdDriverStatus(p);
-//                break;
-//            case HwMeterPacket.ID_ICABBI_JOB_TYPE:
-//                OniCabbiJobType(p);
-//                break;
-//
-//            default:
-//                break;
-//        }
-//    }
+    private void proceedPacket(HwMeterPacket p) {
+        Log.d(TAG_CLASS, "HwMeterPacketParserQueue: new packet" + p.getId());
+        switch (p.getId()) {
+            case HwMeterPacket.ID_REPORT_CURRENT_RATE:
+                //this packet used for ping
+                OnReportCurrentRate(p);
+                break;
+            case HwMeterPacket.ID_METER_ON_OFF_STATE_CHANGE:
+                OnOffStateChange(p);
+                break;
 
-//    public MeterData OnOffStateChange(HwMeterPacket p) {
-//        MeterData data = new MeterData(new HwMeterPacket().meterStatusToString(p.getData()[0]), (int) getCentsAmount(p.getData(), 2, 5), (int) getCentsAmount(p.getData(), 7, 4));
-//        return data;
-//    }
-//
-//    private void OnReportCurrentRate(HwMeterPacket p) {
-//        byte rate = p.getData()[0];
+            case HwMeterPacket.ID_REPORT_METER_STATUS:
+                OnReportMeterStatus(p);
+                break;
+            case HwMeterPacket.ID_REPORT_METER_TIMED_OUT:
+                OnMeterTimedOut(p);
+                break;
+            case HwMeterPacket.ID_METER_FAILURE_STATE_CHANGE:
+                OnMeterError(p);
+                break;
+            case HwMeterPacket.ID_REPORT_METER_TRIP_DATA:
+                OnTripData(p);
+                break;
+
+            case HwMeterPacket.ID_REPORT_METER_TRIP_DATA_TLC:
+                OnTripDataTcl(p);
+                break;
+
+            case HwMeterPacket.ID_REPORT_METER_STATISTICS:
+                OnMeterStatistic(p);
+                break;
+
+            case HwMeterPacket.ID_REPORT_CURRENT_RUNNING_FARE:
+                OnRunningFare(p);
+                break;
+            case HwMeterPacket.ID_MIN_FARE_AMOUNT:
+                OnMinFare(p);
+                break;
+            case HwMeterPacket.ID_SET_NEGOTIATED_FARE:
+            case HwMeterPacket.ID_SET_NEGOTIATED_FARE_AND_PASSENGERS:
+                OnNegotiatedFare(p);
+                break;
+            case HwMeterPacket.ID_ICABBI_TRIP_ID_DRIVER_STATUS:
+                OniCabbiTripIdDriverStatus(p);
+                break;
+            case HwMeterPacket.ID_ICABBI_JOB_TYPE:
+                OniCabbiJobType(p);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private void OnOffStateChange(HwMeterPacket p) {
+        HwMeterFareData data = new HwMeterFareData();
+        data.setStatus(p.getData()[0]);
+        // condition below is specific to centrodyne meters,
+        // so, basically you should request trip data
+        if (p.getDataLen() > 1) {
+            data.setRate(getInt(p.getData(), 1, 1));
+            data.setFare(getDollarAmount(p.getData(), 2, 5));
+            data.setExtras(getDollarAmount(p.getData(), 7, 4));
+        }
+//        mListener.onHwMeterParserResult(HwMeterService.EVENT_METER_ON_OFF_STATE_CHANGE, data);
+    }
+
+    private void OnReportCurrentRate(HwMeterPacket p) {
+        byte rate = p.getData()[0];
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_REPORT_CURRENT_RATE, Byte.valueOf(rate));
-//    }
-//
-//    private void OnMeterTimedOut(HwMeterPacket p) {
+    }
+
+    private void OnMeterTimedOut(HwMeterPacket p) {
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_METER_TIMED_OUT, null);
-//    }
-//
-//    private void OnMeterError(HwMeterPacket p) {
-//        byte errorCode = p.getData()[0];
+    }
+
+    private void OnMeterError(HwMeterPacket p) {
+        byte errorCode = p.getData()[0];
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_METER_FAILURE_STATE_CHANGE, Byte.valueOf(errorCode));
-//    }
-//
-//    private void OnMeterStatistic(HwMeterPacket p) {
-//        HwMeterFareData data = new HwMeterFareData();
-//        data.setUnit(getInt(p.getData(), 0, 1));
-//        data.setFare(getDollarAmount(p.getData(), 1, 10));
-//        data.setExtras(getDollarAmount(p.getData(), 11, 10));
-//        data.setFinalFax(getDollarAmount(p.getData(), 21, 10));
-//        data.setTripTotalDistance(getLong(p.getData(), 31, 10));
-//        data.setTripAboveThresholdDistance(getLong(p.getData(), 41, 10));
-//        data.setTotalTripCount(getLong(p.getData(), 51, 10));
+    }
+
+    private void OnMeterStatistic(HwMeterPacket p) {
+        HwMeterFareData data = new HwMeterFareData();
+        data.setUnit(getInt(p.getData(), 0, 1));
+        data.setFare(getDollarAmount(p.getData(), 1, 10));
+        data.setExtras(getDollarAmount(p.getData(), 11, 10));
+        data.setFinalFax(getDollarAmount(p.getData(), 21, 10));
+        data.setTripTotalDistance(getLong(p.getData(), 31, 10));
+        data.setTripAboveThresholdDistance(getLong(p.getData(), 41, 10));
+        data.setTotalTripCount(getLong(p.getData(), 51, 10));
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_REPORT_METER_STATISTICS, data);
-//
+
 //        mListener.onHwMeterDistanceValue((byte) (p.getData()[0] - 48));
-//    }
-//
-//    private void OnReportMeterStatus(HwMeterPacket p) {
-//        byte status = p.getData()[0];
-//        byte failure = p.getData()[1]; // 0 - not failure
-//        byte enabled = p.getData()[2]; // 0 - disabled
+    }
+
+    private void OnReportMeterStatus(HwMeterPacket p) {
+        byte status = p.getData()[0];
+        byte failure = p.getData()[1]; // 0 - not failure
+        byte enabled = p.getData()[2]; // 0 - disabled
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_REPORT_METER_STATUS_FAILURE, Byte.valueOf(failure));
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_REPORT_METER_STATUS_ENABLED, Byte.valueOf(enabled));
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_REPORT_METER_STATUS, Byte.valueOf(status));
-//    }
-//
-//    private void OnTripData(HwMeterPacket p) {
-//        HwMeterFareData data = new HwMeterFareData();
-//        data.setFare(getDollarAmount(p.getData(), 0, 8));
-//        data.setFinalFax(getDollarAmount(p.getData(), 8, 8));
-//        data.setExtras(getDollarAmount(p.getData(), 16, 4));
-//        data.setNetTotal(getDollarAmount(p.getData(), 20, 8));
-//        data.setTripTotalDistance(getLong(p.getData(), 28, 8));
-//        data.setTripAboveThresholdDistance(getLong(p.getData(), 28, 8));
+    }
+
+    private void OnTripData(HwMeterPacket p) {
+        HwMeterFareData data = new HwMeterFareData();
+        data.setFare(getDollarAmount(p.getData(), 0, 8));
+        data.setFinalFax(getDollarAmount(p.getData(), 8, 8));
+        data.setExtras(getDollarAmount(p.getData(), 16, 4));
+        data.setNetTotal(getDollarAmount(p.getData(), 20, 8));
+        data.setTripTotalDistance(getLong(p.getData(), 28, 8));
+        data.setTripAboveThresholdDistance(getLong(p.getData(), 28, 8));
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_REPORT_METER_TRIP_DATA, data);
-//    }
-//
-//    private void OnRunningFare(HwMeterPacket p) {
-//        HwMeterFareData data = new HwMeterFareData();
-//        data.setFare(getDollarAmount(p.getData(), 0, 8));
-//        data.setExtras(getDollarAmount(p.getData(), 8, 8));
+    }
+
+    private void OnRunningFare(HwMeterPacket p) {
+        HwMeterFareData data = new HwMeterFareData();
+        data.setFare(getDollarAmount(p.getData(), 0, 8));
+        data.setExtras(getDollarAmount(p.getData(), 8, 8));
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_REPORT_METER_RUNNING_FARE, data);
-//
-//    }
+
+    }
 
     private void OnMinFare(HwMeterPacket p) {
         Double fare = Double.valueOf(getDollarAmount(p.getData(), 0, 5));
@@ -232,33 +240,29 @@ public class HwMeterPacketParserQueue extends Thread {
     }
 
 
-//    private void OnTripDataTcl(HwMeterPacket p) {
-//        HwMeterFareData data = new HwMeterFareData();
-//        data.setFare(getDollarAmount(p.getData(), 0, 8));
-//        data.setFinalFax(getDollarAmount(p.getData(), 8, 8));
-//        data.setExtras(getDollarAmount(p.getData(), 16, 4));
-//        data.setMtaTax(getDollarAmount(p.getData(), 20, 4));
-//        data.setNetTotal(getDollarAmount(p.getData(), 24, 8));
-//        data.setTripTotalDistance(getLong(p.getData(), 32, 8));
-//        data.setTripAboveThresholdDistance(getLong(p.getData(), 32, 8));
+    private void OnTripDataTcl(HwMeterPacket p) {
+        HwMeterFareData data = new HwMeterFareData();
+        data.setFare(getDollarAmount(p.getData(), 0, 8));
+        data.setFinalFax(getDollarAmount(p.getData(), 8, 8));
+        data.setExtras(getDollarAmount(p.getData(), 16, 4));
+        data.setMtaTax(getDollarAmount(p.getData(), 20, 4));
+        data.setNetTotal(getDollarAmount(p.getData(), 24, 8));
+        data.setTripTotalDistance(getLong(p.getData(), 32, 8));
+        data.setTripAboveThresholdDistance(getLong(p.getData(), 32, 8));
 //        mListener.onHwMeterParserResult(HwMeterService.EVENT_REPORT_METER_TRIP_DATA_TLC, data);
-//    }
+    }
 
     static String getStringData(byte[] data, int from, int length) {
         try {
             return new String(data, from, length, "US-ASCII");
         } catch (Exception ex) {
-            Log.e(TAG, ex.getMessage(), ex);
+            Log.e(TAG_CLASS, ex.getMessage(), ex);
         }
         return "";
     }
 
     static double getDollarAmount(byte[] data, int from, int length) {
         return ((double) getLong(data, from, length)) / 100.0;// convert cents to $
-    }
-
-    static double getCentsAmount(byte[] data, int from, int length) {
-        return ((double) getLong(data, from, length));// convert cents to $
     }
 
     static int getInt(byte[] data, int from, int length) {
@@ -269,12 +273,12 @@ public class HwMeterPacketParserQueue extends Thread {
             try {
                 result = Integer.parseInt(new String(newArray, "US-ASCII"));
             } catch (Exception e) {
-                Log.e(TAG, e.getMessage(), e);
+                Log.e(TAG_CLASS, e.getMessage(), e);
                 StringBuffer b = new StringBuffer();
                 for (int i = 0; i < data.length; i++) {
                     b.append(String.format("%02X ", data[i]));
                 }
-                Log.d(TAG, "HwMeterPacketParserQueue: fail parse int. From:" + from + " Length: " + length
+                Log.d(TAG_CLASS, "HwMeterPacketParserQueue: fail parse int. From:" + from + " Length: " + length
                         + " Data: " + b);
             }
         }
@@ -289,12 +293,12 @@ public class HwMeterPacketParserQueue extends Thread {
             try {
                 result = Long.parseLong(new String(newArray, "US-ASCII"));
             } catch (Exception e) {
-                Log.e(TAG, e.getMessage(), e);
+                Log.e(TAG_CLASS, e.getMessage(), e);
                 StringBuffer b = new StringBuffer();
                 for (int i = 0; i < data.length; i++) {
                     b.append(String.format("%02X ", data[i]));
                 }
-                Log.d(TAG, "HwMeterPacketParserQueue: fail parse long. From:" + from + " Length: " + length
+                Log.d(TAG_CLASS, "HwMeterPacketParserQueue: fail parse long. From:" + from + " Length: " + length
                         + " Data: " + b);
             }
         }

@@ -34,9 +34,6 @@ import ua.com.icabbyclient.icabbyclient.utils.SeparatorDecoration;
 public class DeviceConnectionFragment extends Fragment implements DeviceListAdapter.OnPairButtonClickListener {
     private static final int REQUEST_ENABLE_BT = 1;
 
-    public static final int PIM_APP = 1;
-    public static final int TUNNEL_APP = 2;
-
     private BluetoothAdapter mBluetoothAdapter;
     private List<BluetoothDevice> mListDevice = new ArrayList<>();
     private DeviceListAdapter mDeviceListAdapter;
@@ -49,8 +46,8 @@ public class DeviceConnectionFragment extends Fragment implements DeviceListAdap
         mBluetoothServer = bluetoothServer;
     }
 
-    public void setBluetoothServerTunnel(BluetoothServerConnecting bluetoothServerMeterTunnel) {
-        mBluetoothServerMeterTunnel = mBluetoothServerMeterTunnel;
+    public void setBluetoothServerTunnel(BluetoothServerConnecting bluetoothServer) {
+        mBluetoothServerMeterTunnel = bluetoothServer;
     }
 
 
@@ -246,9 +243,5 @@ public class DeviceConnectionFragment extends Fragment implements DeviceListAdap
         } else {
             Log.d("", "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
         }
-    }
-
-    public interface ConnectingDevice {
-        void connectToDevice(int i, BluetoothDevice mDevice);
     }
 }

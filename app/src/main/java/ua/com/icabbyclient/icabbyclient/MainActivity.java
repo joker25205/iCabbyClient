@@ -9,8 +9,7 @@ import android.view.MenuItem;
 
 import java.util.UUID;
 
-import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServer;
-import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothServerMeterTunnel;
+import ua.com.icabbyclient.icabbyclient.bluetooth_pim_helper.BluetoothClientServer;
 import ua.com.icabbyclient.icabbyclient.fragments.ApiCommunicationClientFragment;
 import ua.com.icabbyclient.icabbyclient.fragments.DeviceConnectionFragment;
 import ua.com.icabbyclient.icabbyclient.fragments.TunnelCommunicationFragment;
@@ -22,9 +21,9 @@ public class MainActivity extends AppCompatActivity {
     public static UUID sUUID_PIM = UUID.fromString("895a86e2-6a31-11e8-adc0-fa7ae01bbebc");
     public static UUID sUUID_Tunnel = UUID.fromString("c90c5b86-536f-11e8-9c2d-fa7ae01bbebc");
 
-    private TunnelCommunicationFragment mTunnelCommunicationFragment;
-    private ApiCommunicationClientFragment mApiCommunicationClientFragment;
     private DeviceConnectionFragment mDeviceConnectionFragment;
+    private ApiCommunicationClientFragment mApiCommunicationClientFragment;
+    private TunnelCommunicationFragment mTunnelCommunicationFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +37,11 @@ public class MainActivity extends AppCompatActivity {
         mTunnelCommunicationFragment = new TunnelCommunicationFragment();
 
 
-        final BluetoothServer mBluetoothServer = new BluetoothServer(DEVICE_NAME, sUUID_PIM, mApiCommunicationClientFragment);
-        final BluetoothServerMeterTunnel mBluetoothServerMeter = new BluetoothServerMeterTunnel(TUNNEL_SEVER_NAME, sUUID_Tunnel, mTunnelCommunicationFragment);
+        final BluetoothClientServer mBluetoothServer = new BluetoothClientServer(DEVICE_NAME, sUUID_PIM, mApiCommunicationClientFragment, BluetoothClientServer.TypeConnection.PIM_APP);
+        final BluetoothClientServer mBluetoothServerMeter = new BluetoothClientServer(TUNNEL_SEVER_NAME, sUUID_Tunnel, mTunnelCommunicationFragment, BluetoothClientServer.TypeConnection.TUNNEL_APP);
 
-        mDeviceConnectionFragment.setBluetoothServerAPI(mBluetoothServer);
         mDeviceConnectionFragment.setBluetoothServerTunnel(mBluetoothServerMeter);
+        mDeviceConnectionFragment.setBluetoothServerAPI(mBluetoothServer);
 
         mApiCommunicationClientFragment.setBluetoothConnection(mBluetoothServer);
 
